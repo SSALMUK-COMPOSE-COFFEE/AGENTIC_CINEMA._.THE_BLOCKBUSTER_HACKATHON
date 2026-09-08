@@ -16,7 +16,7 @@ class ShotSpan:
         return self.t_out - self.t_in
 
 
-def detect_shots(video_path: str, threshold: float = 27.0) -> list[ShotSpan]:
+def detect_shots(video_path: str, threshold: float = 15.0) -> list[ShotSpan]:
     raw = detect(video_path, ContentDetector(threshold=threshold))
     spans = [(a.get_seconds(), b.get_seconds()) for a, b in raw]
     merged: list[list[float]] = []

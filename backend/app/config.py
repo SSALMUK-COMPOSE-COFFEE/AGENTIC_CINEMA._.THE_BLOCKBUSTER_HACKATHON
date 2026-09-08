@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 
+from google.genai import types
 from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -35,6 +36,9 @@ class Settings(BaseSettings):
     def resolve_data_dir(cls, v: str | Path) -> Path:
         p = Path(v)
         return p if p.is_absolute() else (PROJECT_ROOT / p).resolve()
+
+    def fast_thinking(self) -> types.GenerateContentConfig:
+        return types.GenerateContentConfig(thinking_config=types.ThinkingConfig(thinking_level="low"))
 
     def export_google_env(self) -> None:
         if self.gemini_api_key:

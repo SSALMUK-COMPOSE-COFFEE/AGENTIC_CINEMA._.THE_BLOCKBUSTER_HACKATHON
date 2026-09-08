@@ -13,7 +13,7 @@ PROMPT = (
 )
 
 
-async def describe_shot(proxy_path: Path, retries: int = 5) -> ShotMeta:
+async def describe_shot(proxy_path: Path, retries: int = 8) -> ShotMeta:
     client = get_client()
     video = types.Part.from_bytes(data=proxy_path.read_bytes(), mime_type="video/mp4")
     config = types.GenerateContentConfig(
@@ -21,7 +21,7 @@ async def describe_shot(proxy_path: Path, retries: int = 5) -> ShotMeta:
         response_schema=ShotMeta,
         temperature=0.2,
     )
-    delay = 2.0
+    delay = 3.0
     for attempt in range(retries):
         try:
             resp = await client.aio.models.generate_content(
@@ -32,5 +32,5 @@ async def describe_shot(proxy_path: Path, retries: int = 5) -> ShotMeta:
             if attempt == retries - 1:
                 raise
             await asyncio.sleep(delay)
-            delay *= 2
+            delay = min(delay * 2, 60.0)
     raise RuntimeError("unreachable")
