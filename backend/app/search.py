@@ -44,7 +44,7 @@ def similar_shots(shot_id: str, limit: int = 24) -> list[dict]:
 def stats() -> dict:
     c = get_client()
     return {
-        "films": c.command("SELECT uniqExact(film_id) FROM films"),
+        "films": c.command("SELECT uniqExact(film_id) FROM shots"),
         "shots": c.command("SELECT count() FROM shots"),
         "hours": round(float(c.command("SELECT sum(t_out - t_in) FROM shots") or 0) / 3600, 2),
     }

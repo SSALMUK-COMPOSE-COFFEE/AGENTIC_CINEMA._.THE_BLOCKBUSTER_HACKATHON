@@ -9,5 +9,5 @@ router = APIRouter()
 def health() -> dict:
     client = get_client()
     shots = client.command("SELECT count() FROM shots")
-    films = client.command("SELECT count() FROM films")
+    films = client.command("SELECT uniqExact(film_id) FROM shots")
     return {"status": "ok", "films": films, "shots": shots}
