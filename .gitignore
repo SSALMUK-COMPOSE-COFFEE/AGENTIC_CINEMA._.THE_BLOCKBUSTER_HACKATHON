@@ -1,0 +1,10 @@
+docs/
+.env
+data/
+backend/.venv/
+web/node_modules/
+web/dist/
+__pycache__/
+*.pyc
+.ruff_cache/
+.pytest_cache/
