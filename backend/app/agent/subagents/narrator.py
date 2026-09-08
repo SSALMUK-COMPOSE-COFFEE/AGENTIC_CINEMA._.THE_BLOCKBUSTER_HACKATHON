@@ -1,5 +1,6 @@
 from google.adk.agents import LlmAgent
 
+from app.agent import trace
 from app.config import settings
 
 INSTRUCTION = """You are the Narrator. You explain the archive team's results to a film editor in plain,
@@ -13,4 +14,6 @@ def make_narrator() -> LlmAgent:
         model=settings.gemini_model,
         description="Explains search and assembly results to the editor.",
         instruction=INSTRUCTION,
+        generate_content_config=settings.fast_thinking(),
+        **trace.CALLBACKS,
     )

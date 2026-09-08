@@ -1,5 +1,7 @@
 import uuid
 
+from google.adk.tools.tool_context import ToolContext
+
 from app.db import get_client
 
 
@@ -41,19 +43,20 @@ def build_edl(shot_ids: list[str], title: str = "SHOT MEMORY SEQUENCE", fps: flo
         timeline.append({
             "shot_id": sid, "film_title": r["film_title"], "t_in": r["t_in"], "t_out": r["t_out"],
             "rec_in": rec, "rec_out": rec + dur, "thumbnail_uri": r["thumbnail_uri"], "proxy_uri": r["proxy_uri"],
+            "caption": r["caption"],
         })
         rec += dur
     return {"edl": "\n".join(lines), "timeline": timeline, "total_seconds": rec}
 
 
-def save_sequence(session_id: str, intent: str, shot_ids: list[str]) -> dict:
+def save_sequence(intent: str, shot_ids: list[str], tool_context: ToolContext) -> dict:
     """Persist an assembled sequence so it can be reloaded or exported later.
 
     Args:
-        session_id: current session id.
         intent: the editor's request that produced the sequence.
         shot_ids: ordered shot ids.
     """
+    session_id = str(tool_context.state.get("session_id") or tool_context.session.id)
     sequence_id = uuid.uuid4().hex
     get_client().insert(
         "sequences", [[sequence_id, session_id, intent, shot_ids]],
