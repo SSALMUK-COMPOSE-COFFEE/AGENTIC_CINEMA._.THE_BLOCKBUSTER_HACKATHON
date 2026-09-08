@@ -1,0 +1,79 @@
+1
+00:00:00,000 --> 00:00:07,000
+A documentary assistant editor logs a hundred hours of footage by hand: who, where, what time of day, what size.
+
+2
+00:00:07,000 --> 00:00:13,000
+It takes weeks. Then the editor asks for a rainy night close-up of two people...
+
+3
+00:00:13,000 --> 00:00:20,000
+...and half a day disappears into the log sheet. Shot Memory makes the log write itself.
+
+4
+00:00:20,000 --> 00:00:28,500
+Four public-domain films, 2,166 shots. Gemini watched every one and wrote the log: caption, people, time of day, shot size, tension.
+
+5
+00:00:29,266 --> 00:00:32,732
+Ask in plain language. The Librarian agent embeds the request...
+
+6
+00:00:32,732 --> 00:00:38,332
+...writes one hybrid SQL query, and runs it through the official ClickHouse MCP server. Hard filters and vector distance in the same statement.
+
+7
+00:00:38,332 --> 00:00:44,332
+ClickHouse answers in tens of milliseconds. The SQL panel shows exactly what the agent ran.
+
+8
+00:00:44,332 --> 00:00:50,332
+Hover a card to play the shot. Every card carries the metadata Gemini extracted.
+
+9
+00:00:50,332 --> 00:00:54,832
+Similar runs a vector neighbour search on the shot's own embedding.
+
+10
+00:00:54,832 --> 00:00:57,832
+Now an editing brief.
+
+11
+00:01:01,299 --> 00:01:05,299
+The CutAssembler splits the brief into beats and sends the Librarian out for each one, in parallel.
+
+12
+00:01:05,332 --> 00:01:14,332
+Every tool call from every agent streams to the panel: embed_query, run_query, check_metadata, compare_frames.
+
+13
+00:01:14,332 --> 00:01:18,566
+The ContinuityChecker applies time-of-day and interior/exterior rules from ClickHouse metadata, then asks Gemini to look at the frames.
+
+14
+00:01:18,566 --> 00:01:24,566
+The timeline lands with the sequence, its total length, and continuity warnings the editor can act on.
+
+15
+00:01:24,566 --> 00:01:29,566
+Reorder, drop a shot...
+
+16
+00:01:29,566 --> 00:01:33,066
+...and export a CMX3600 EDL for Resolve, Premiere, or Final Cut.
+
+17
+00:01:33,299 --> 00:01:41,299
+Under the hood: Google ADK runs the agent team, and Gemini 3.8 Flash makes every model call.
+
+18
+00:01:41,299 --> 00:01:49,299
+ClickHouse is not a chatbot backend. It is the agents' long-term memory, joined at runtime through mcp-clickhouse.
+
+19
+00:01:49,299 --> 00:01:57,232
+Remove ClickHouse and nothing works: search, assembly, and continuity checks all read from one table.
+
+20
+00:01:57,232 --> 00:02:09,199
+Shot Memory. Search hundreds of thousands of shots in plain language, and let the agents assemble the first cut.
