@@ -14,7 +14,11 @@ export function Timeline({ items, warnings, onRemove, onMove, onExport, onClear 
   const total = items.reduce((a, s) => a + (s.t_out - s.t_in), 0)
   const warnAfter = new Map<string, Warning>()
   for (const w of warnings) warnAfter.set(w.pair[0], w)
-  let rec = 0
+  const starts: number[] = []
+  items.reduce((acc, s) => {
+    starts.push(acc)
+    return acc + (s.t_out - s.t_in)
+  }, 0)
   return (
     <div className="timeline">
       <div className="tl-head">
@@ -26,8 +30,7 @@ export function Timeline({ items, warnings, onRemove, onMove, onExport, onClear 
       </div>
       <div className="tl-track">
         {items.map((s, i) => {
-          const start = rec
-          rec += s.t_out - s.t_in
+          const start = starts[i]
           const w = warnAfter.get(s.shot_id)
           return (
             <div key={s.shot_id} className="tl-item" style={{ flexGrow: Math.max(1, s.t_out - s.t_in) }}>

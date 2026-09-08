@@ -33,7 +33,7 @@ export function ShotCard({ shot, onAdd, onSimilar, compact }: Props) {
         <>
           <div className="film">{shot.film_title}</div>
           <div className="caption">{shot.caption}</div>
-          <div className="chips">{chips.map((c) => <span key={c as string}>{c}</span>)}</div>
+          <div className="chips">{chips.map((c, i) => <span key={i}>{c}</span>)}</div>
           <div className="actions">
             {onAdd && <button onClick={() => onAdd(shot)}>+ Timeline</button>}
             {onSimilar && <button onClick={() => onSimilar(shot)}>Similar</button>}

@@ -9,7 +9,9 @@ const label: Record<string, string> = {
 }
 
 export function AgentPanel({ events, busy }: { events: AgentEvent[]; busy: boolean }) {
-  const items = events.filter((e) => e.type === 'tool_call' || e.type === 'text' || e.type === 'error')
+  const items = events.filter(
+    (e) => e.type === 'tool_call' || e.type === 'result' || (e.type === 'text' && e.final) || e.type === 'error',
+  )
   return (
     <div className="agent-panel">
       <h3>Agent team {busy && <span className="spinner" />}</h3>
@@ -27,6 +29,13 @@ export function AgentPanel({ events, busy }: { events: AgentEvent[]; busy: boole
               <li key={i} className={e.final ? 'final' : ''}>
                 <b>{label[e.agent] ?? e.agent}</b>
                 <p>{e.text.length > 400 ? e.text.slice(0, 400) + '…' : e.text}</p>
+              </li>
+            )
+          if (e.type === 'result')
+            return (
+              <li key={i} className="result">
+                <b>{e.agent}</b> returned{' '}
+                {e.agent === 'Librarian' ? `${e.data.count} shots` : `${e.data.shot_ids.length} shots, ${e.data.warnings.length} warnings`}
               </li>
             )
           if (e.type === 'error') return <li key={i} className="error">{e.message}</li>

@@ -3,8 +3,8 @@ import { AgentPanel } from './components/AgentPanel'
 import { ShotCard } from './components/ShotCard'
 import { SqlPanel } from './components/SqlPanel'
 import { Timeline } from './components/Timeline'
-import { chat, extractJson, fetchEdl, getFilmShots, getFilms, getShots, getSimilar, getStats } from './lib/api'
-import type { AgentEvent, AssemblerResult, Film, LibrarianResult, Shot, Stats, Warning } from './lib/types'
+import { chat, fetchEdl, getFilmShots, getFilms, getSimilar, getStats } from './lib/api'
+import type { AgentEvent, Film, Shot, Stats, Warning } from './lib/types'
 
 const EXAMPLES = [
   'rainy night, two people, close-up',
@@ -21,6 +21,7 @@ export default function App() {
   const [sql, setSql] = useState<string | null>(null)
   const [count, setCount] = useState<number | null>(null)
   const [ms, setMs] = useState<number | null>(null)
+  const [queryMs, setQueryMs] = useState<number | null>(null)
   const [events, setEvents] = useState<AgentEvent[]>([])
   const [busy, setBusy] = useState(false)
   const [timeline, setTimeline] = useState<Shot[]>([])
@@ -47,8 +48,13 @@ export default function App() {
   }, [])
 
   const similar = useCallback(async (s: Shot) => {
-    setResults(await getSimilar(s.shot_id))
-    setSql(`SELECT ... ORDER BY cosineDistance(embedding, <embedding of ${s.shot_id}>) LIMIT 24`)
+    const t0 = performance.now()
+    const rows = await getSimilar(s.shot_id)
+    setResults(rows)
+    setCount(rows.length)
+    setQueryMs(Math.round(performance.now() - t0))
+    setMs(null)
+    setSql(`SELECT ..., cosineDistance(embedding, (SELECT embedding FROM shots WHERE shot_id = '${s.shot_id}')) AS dist\nFROM shots WHERE shot_id != '${s.shot_id}' ORDER BY dist ASC LIMIT 24`)
     setQuery(`similar to ${s.shot_id}`)
   }, [])
 
@@ -58,26 +64,40 @@ export default function App() {
       setBusy(true)
       setEvents([])
       setEdl(null)
+      setQueryMs(null)
       const t0 = performance.now()
+      let cutMode = false
+      let lastQueryCall: number | null = null
       try {
         for await (const ev of chat(text, session.current)) {
           if (ev.type === 'session') session.current = ev.session_id
           setEvents((e) => [...e, ev])
-          if (ev.type === 'text' && ev.final && ev.agent === 'EditorAssistant') {
-            const lib = extractJson<LibrarianResult>(ev.text)
-            if (lib && Array.isArray(lib.shots)) {
-              setResults(lib.shots)
-              setSql(lib.sql ?? null)
-              setCount(lib.count ?? lib.shots.length)
-              setMs(Math.round(performance.now() - t0))
+          if (ev.type === 'tool_call' && ev.name === 'CutAssembler') {
+            cutMode = true
+            setResults([])
+            setSql(null)
+            setCount(null)
+          }
+          if (ev.type === 'tool_call' && ev.name === 'run_query') lastQueryCall = ev.t ?? null
+          if (ev.type === 'tool_result' && ev.name === 'run_query' && lastQueryCall != null && ev.t != null)
+            setQueryMs(Math.max(1, Math.round((ev.t - lastQueryCall) * 1000)))
+          if (ev.type === 'result' && ev.agent === 'Librarian') {
+            const shots = ev.data.shots
+            if (cutMode) {
+              setResults((r) => [...r, ...shots.filter((s) => !r.some((x) => x.shot_id === s.shot_id))])
+              setCount((c) => (c ?? 0) + shots.length)
+            } else {
+              setResults(shots)
+              setCount(ev.data.count ?? shots.length)
             }
-            const cut = extractJson<AssemblerResult>(ev.text)
-            if (cut && Array.isArray(cut.shot_ids) && cut.timeline) {
-              const shots = await getShots(cut.shot_ids)
-              setTimeline(shots)
-              setWarnings(cut.warnings ?? [])
-              setEdl(cut.edl ?? null)
-            }
+            setSql(ev.data.sql ?? null)
+            setMs(Math.round(performance.now() - t0))
+          }
+          if (ev.type === 'result' && ev.agent === 'CutAssembler') {
+            setTimeline(ev.data.timeline)
+            setWarnings(ev.data.warnings ?? [])
+            setEdl(ev.data.edl ?? null)
+            setMs(Math.round(performance.now() - t0))
           }
         }
       } catch (e) {
@@ -156,14 +176,7 @@ export default function App() {
             ))}
           </div>
 
-          <SqlPanel sql={sql} count={count} ms={ms} />
-
-          <div className="grid">
-            {results.map((s) => (
-              <ShotCard key={s.shot_id} shot={s} onAdd={addToTimeline} onSimilar={similar} />
-            ))}
-            {!results.length && !busy && <div className="empty">No shots yet. Search above or browse a film.</div>}
-          </div>
+          <SqlPanel sql={sql} count={count} ms={ms} queryMs={queryMs} />
 
           <Timeline
             items={timeline}
@@ -177,6 +190,14 @@ export default function App() {
               setEdl(null)
             }}
           />
+
+          <div className="grid">
+            {results.map((s) => (
+              <ShotCard key={s.shot_id} shot={s} onAdd={addToTimeline} onSimilar={similar} />
+            ))}
+            {!results.length && !busy && <div className="empty">No shots yet. Search above or browse a film.</div>}
+          </div>
+
         </section>
 
         <aside>

@@ -52,29 +52,11 @@ export async function* chat(message: string, sessionId: string | null): AsyncGen
   }
 }
 
-export function extractJson<T>(text: string): T | null {
-  const start = text.indexOf('{')
-  if (start < 0) return null
-  let depth = 0
-  for (let i = start; i < text.length; i++) {
-    if (text[i] === '{') depth++
-    else if (text[i] === '}') {
-      depth--
-      if (depth === 0) {
-        try {
-          return JSON.parse(text.slice(start, i + 1)) as T
-        } catch {
-          return null
-        }
-      }
-    }
-  }
-  return null
-}
-
 export const fmt = (s: number) => {
-  const m = Math.floor(s / 60)
+  const h = Math.floor(s / 3600)
+  const m = Math.floor((s % 3600) / 60)
   const sec = Math.floor(s % 60)
-  const f = Math.round((s % 1) * 24)
-  return `${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}:${String(f).padStart(2, '0')}`
+  const f = Math.round((s % 1) * 24) % 24
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${pad(h)}:${pad(m)}:${pad(sec)}:${pad(f)}`
 }
