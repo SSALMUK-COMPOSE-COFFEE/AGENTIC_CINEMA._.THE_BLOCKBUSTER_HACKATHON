@@ -23,11 +23,20 @@ Submission for **Agentic Cinema: The Blockbuster Hackathon** — ClickHouse trac
 ## Run locally
 
 ```bash
-cp .env.example .env            # add GOOGLE_API_KEY
-docker compose up -d clickhouse
+cp .env.example .env                    # set GEMINI_API_KEY
+docker compose up -d clickhouse         # schema is applied on first start
+uv tool install mcp-clickhouse          # the MCP server the agents talk to
 cd backend && uv sync && uv run uvicorn app.main:app --reload --port 8010
-cd web && npm install && npm run dev
+cd web && npm install && npm run dev    # http://localhost:5173
 ```
+
+Ingest a film:
+
+```bash
+cd backend && uv run python -m app.ingest.pipeline ../data/films/charade.mp4 --title "Charade" --year 1963
+```
+
+Only three settings are required: `GEMINI_API_KEY`, optional `GEMINI_BASE_URL`, and `GEMINI_MODEL`.
 
 ## Demo data
 
