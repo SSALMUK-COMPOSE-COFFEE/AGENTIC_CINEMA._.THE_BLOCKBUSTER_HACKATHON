@@ -1,3 +1,5 @@
+from itertools import pairwise
+
 from app.db import get_client
 
 COLUMNS = "shot_id, toString(time_of_day) AS time_of_day, toString(interior) AS interior, weather, characters, dominant_colors, toString(shot_size) AS shot_size"
@@ -20,7 +22,7 @@ def check_metadata(shot_ids: list[str]) -> dict:
     meta = {r["shot_id"]: r for r in rows}
     warnings = []
     ordered = [s for s in shot_ids if s in meta]
-    for a, b in zip(ordered, ordered[1:], strict=False):
+    for a, b in pairwise(ordered):
         ma, mb = meta[a], meta[b]
         if ma["time_of_day"] != mb["time_of_day"] and "unknown" not in (ma["time_of_day"], mb["time_of_day"]):
             warnings.append(_warn(a, b, "time_of_day", "mid",

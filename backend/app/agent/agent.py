@@ -1,10 +1,10 @@
 from google.adk.agents import LlmAgent
 from google.adk.tools import AgentTool
 
+from app.agent import trace
 from app.agent.subagents.cut_assembler import make_cut_assembler
 from app.agent.subagents.librarian import make_librarian
 from app.agent.subagents.narrator import make_narrator
-from app.agent import trace
 from app.config import settings
 
 INSTRUCTION = """You are EditorAssistant, the front desk of a film shot archive backed by ClickHouse.

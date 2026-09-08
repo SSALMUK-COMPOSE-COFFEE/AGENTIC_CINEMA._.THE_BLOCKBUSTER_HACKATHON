@@ -5,13 +5,14 @@ from collections.abc import AsyncIterator
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
+from app.agent.runner import stream_chat
 from app.api.agent import router as agent_router
 from app.api.films import router as films_router
 from app.api.health import router as health_router
 from app.api.sequences import router as sequences_router
 from app.api.shots import router as shots_router
-from app.agent.runner import stream_chat
 from app.config import settings
+
 
 async def warm_up() -> None:
     with contextlib.suppress(Exception):

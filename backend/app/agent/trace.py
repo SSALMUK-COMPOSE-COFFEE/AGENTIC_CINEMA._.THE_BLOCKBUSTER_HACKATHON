@@ -83,7 +83,6 @@ HYDRATORS = {"Librarian": hydrate_librarian, "CutAssembler": hydrate_assembler}
 
 def before_tool(tool: BaseTool, args: dict, tool_context: ToolContext) -> None:
     emit({"type": "tool_call", "agent": tool_context.agent_name, "name": tool.name, "args": truncate(args, 1500)})
-    return None
 
 
 def after_tool(tool: BaseTool, args: dict, tool_context: ToolContext, tool_response: Any) -> Any:
@@ -101,7 +100,6 @@ def after_tool(tool: BaseTool, args: dict, tool_context: ToolContext, tool_respo
 
 def before_model(callback_context: CallbackContext, llm_request: Any) -> None:
     emit({"type": "thinking", "agent": callback_context.agent_name})
-    return None
 
 
 CALLBACKS = {
