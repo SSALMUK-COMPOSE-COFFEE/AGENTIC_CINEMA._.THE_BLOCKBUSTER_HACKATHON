@@ -67,7 +67,6 @@ export default function App() {
       setQueryMs(null)
       const t0 = performance.now()
       let cutMode = false
-      const queryCalls: number[] = []
       try {
         for await (const ev of chat(text, session.current)) {
           if (ev.type === 'session') session.current = ev.session_id
@@ -78,9 +77,7 @@ export default function App() {
             setSql(null)
             setCount(null)
           }
-          if (ev.type === 'tool_call' && ev.name === 'run_query' && ev.t != null) queryCalls.push(ev.t)
-          if (ev.type === 'tool_result' && ev.name === 'run_query' && ev.t != null && queryCalls.length)
-            setQueryMs(Math.max(1, Math.round((ev.t - (queryCalls.shift() as number)) * 1000)))
+          if (ev.type === 'tool_result' && ev.name === 'run_query' && ev.ms != null) setQueryMs(ev.ms)
           if (ev.type === 'result' && ev.agent === 'Librarian') {
             const shots = ev.data.shots
             if (cutMode) {

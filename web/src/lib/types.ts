@@ -33,7 +33,7 @@ export type Stats = { films: number; shots: number; hours: number }
 export type AgentEvent =
   | { type: 'session'; session_id: string }
   | { type: 'tool_call'; agent: string; name: string; args: Record<string, unknown>; t?: number }
-  | { type: 'tool_result'; agent: string; name: string; result: unknown; t?: number }
+  | { type: 'tool_result'; agent: string; name: string; result: unknown; t?: number; ms?: number | null }
   | { type: 'text'; agent: string; text: string; final: boolean; t?: number }
   | { type: 'thinking'; agent: string; t?: number }
   | { type: 'result'; agent: 'Librarian'; data: LibrarianResult; t?: number }
